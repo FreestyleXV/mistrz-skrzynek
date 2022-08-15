@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom'
 import {Fetcher, fetchPrize} from '../../../Utils/DataFetch'
 import createImages from '../../../Utils/ImagesCreator'
 import './Case.css'
-import caseIndividualBackgroundImage from '../../../Images/case_individual_background.png'
 import CaseIndividual from '../../CaseIndividual/CaseIndividual'
 
 
@@ -78,13 +77,9 @@ function Case(props) {
     
     randomContents.forEach((id, i) => {
       let currentContent = caseContents[id]
-      if(i === rouletteLength-5 && prize.current!=null){
-        currentContent = caseContents[prize]
+      if(i === rouletteLength-5 && prize.current != null){
+        currentContent = caseContents[prize.current]
       }
-      const contentsGradient = ctx.createLinearGradient(0, 100, 200, 100);
-      contentsGradient.addColorStop(0, "rgba(0,0,0)");
-      
-      
       switch(currentContent.rarity){
         case "L":
           ctx.fillStyle = "#c7a946"
@@ -111,12 +106,16 @@ function Case(props) {
           // contentsGradient.addColorStop(1, "#636664");
           break;
       }
-      // ctx.fillStyle = contentsGradient
       ctx.fillRect(-(rouletteIndividualLength.current/2)+(rouletteIndividualLength.current*i)-move, 0, rouletteIndividualLength.current, 200)
-      // ctx.fillStyle = "black"
-      // ctx.fillRect(-(rouletteIndividualLength.current/2)+(rouletteIndividualLength.current*i)-move+10, 10, rouletteIndividualLength.current-20, 180)
-      if(caseContentsImagesLoaded[id]){
-        ctx.drawImage(caseContentsImages[id], -100+(rouletteIndividualLength.current*i)-move+10, 10, 180, 180)
+      if(i === rouletteLength-5 && prize.current != null){
+        if(caseContentsImagesLoaded[prize.current]){
+          ctx.drawImage(caseContentsImages[prize.current], -100+(rouletteIndividualLength.current*i)-move, 0, 200, 200)
+        }
+      }
+      else{
+        if(caseContentsImagesLoaded[id]){
+          ctx.drawImage(caseContentsImages[id], -100+(rouletteIndividualLength.current*i)-move, 0, 200, 200)
+        }
       }
     });
     const blackoutGradient = ctx.createLinearGradient(0, 100, 800, 100);
@@ -215,13 +214,6 @@ function Case(props) {
           </div>
           {caseContentsStatus==="fetched"?<div className='case-contents'>
             {caseContents.map((el, i) => 
-              // <div className='case-contents-individual' style={{"borderColor": el.color}} key={i}>
-              //   {/* <div style={{"backgroundColor": el.color}}>{el.name}</div> */}
-              //   <div className='case-contents-individual-img-container' style={{"backgroundColor": 'red'}}>
-              //     <img src={caseIndividualBackgroundImage} alt="background"></img>
-              //     <img id={`img${el.name}`} src={`http://localhost:3001/image/${el.img}`} alt={el.name} ></img>
-              //   </div>
-              // </div>
               <CaseIndividual key={i} {...el}></CaseIndividual>
             )}
           </div>:<div>nieok</div>}
