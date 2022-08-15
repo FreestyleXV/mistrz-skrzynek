@@ -3,19 +3,17 @@ const fs = require('fs');
 
 const hostname = '127.0.0.1';
 const port = 3001;
-const Contents = [{name:"MAJONEZ", color:"white", img:"majonez.png"}, {name:"KETCHUP", color:"red", img:"ketchup.png"}, {name:"MUSZTARDA", color:"yellow", img:"musztarda.png"}, {name:"SOS BARBEQUE", color:"brown", img:"sos_barbeque.png"}, {name:"CHRZAN", color:"white", img:"chrzan.png"}, {name:"PINK SAUCE", color:"pink", img:"pink_sauce.png"}, {name:"SOS 1000 WYSP", color:"salmon", img:"sos_1000_wysp.png"}]
+const Contents = [{name:"MAJONEZ", rarity:"L", img:"majonez.png"}, {name:"KETCHUP", rarity:"R", img:"ketchup.png"}, {name:"MUSZTARDA", rarity:"C", img:"musztarda.png"}, {name:"SOS BARBEQUE", rarity:"X", img:"sos_barbeque.png"}, {name:"CHRZAN", rarity:"C", img:"chrzan.png"}, {name:"PINK SAUCE", rarity:"R", img:"pink_sauce.png"}, {name:"SOS 1000 WYSP", rarity:"E", img:"sos_1000_wysp.png"}]
 
 const server = http.createServer((req, res) => {
   console.log(req.url)
   let url = req.url.split("/")
   if(url[1] == 'contents'){
-    let rouletteLength = Math.round(Math.random()*2) + 50
+    let rouletteLength = Math.round(Math.random()*2) + 30
     let rouletteContents = []
     for(let i = 0; i < rouletteLength; i++){
       rouletteContents.push(Math.round(Math.random()*(Contents.length-1)))
     }
-    
-
     console.log('pobrano dane')
     res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
     res.write(JSON.stringify({contents:Contents, length:rouletteLength, roulette:rouletteContents}))
