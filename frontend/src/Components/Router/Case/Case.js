@@ -83,27 +83,21 @@ function Case(props) {
       switch(currentContent.rarity){
         case "L":
           ctx.fillStyle = "#c7a946"
-          // contentsGradient.addColorStop(1, "#c7a946");
           break;
         case "X":
           ctx.fillStyle = "#8e3232"
-          // contentsGradient.addColorStop(1, "#8e3232");
           break;
         case "E":
           ctx.fillStyle = "#643c61"
-          // contentsGradient.addColorStop(1, "#643c61");
           break;
         case "R":
           ctx.fillStyle = "#396088"
-          // contentsGradient.addColorStop(1, "#396088");
           break;
         case "U":
           ctx.fillStyle = "#39795a"
-          // contentsGradient.addColorStop(1, "#39795a");
           break;
         case "C":
           ctx.fillStyle = "#636664"
-          // contentsGradient.addColorStop(1, "#636664");
           break;
       }
       ctx.fillRect(-(rouletteIndividualLength.current/2)+(rouletteIndividualLength.current*i)-move, 0, rouletteIndividualLength.current, 200)
