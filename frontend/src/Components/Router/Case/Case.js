@@ -78,29 +78,52 @@ function Case(props) {
     randomContents.forEach((id, i) => {
       let currentContent = caseContents[id]
       if(i === rouletteLength-5 && prize.current != null){
-        currentContent = caseContents[prize.current]
+        currentContent = caseContents[prize.current];
       }
+      const x_pos = -(rouletteIndividualLength.current/2)+(rouletteIndividualLength.current*i)-move;
+      const individualGradient = ctx.createLinearGradient(x_pos, 100, x_pos + rouletteIndividualLength.current, 100);
+      const radialGradient = ctx.createRadialGradient(
+        x_pos + rouletteIndividualLength.current /2,
+        100,
+        rouletteIndividualLength.current/3.5,
+        x_pos + rouletteIndividualLength.current /2,
+        100,
+        rouletteIndividualLength.current/1.2);
+      // individualGradient.addColorStop(0, "rgb(0,0,0)")
+      let color = "#000000"
       switch(currentContent.rarity){
         case "L":
-          ctx.fillStyle = "#c7a946"
+          color = "#c7a946"
+          // individualGradient.addColorStop(1, "#c7a946")
           break;
         case "X":
-          ctx.fillStyle = "#8e3232"
+          color = "#8e3232"
+          // individualGradient.addColorStop(1, "#c7a946")
           break;
         case "E":
-          ctx.fillStyle = "#643c61"
+          color = "#643c61"
+          // individualGradient.addColorStop(1, "#c7a946")
           break;
         case "R":
-          ctx.fillStyle = "#396088"
+          color = "#396088"
+          // individualGradient.addColorStop(1, "#c7a946")
           break;
         case "U":
-          ctx.fillStyle = "#39795a"
+          color = "#39795a"
+          // individualGradient.addColorStop(1, "#c7a946")
           break;
         case "C":
-          ctx.fillStyle = "#636664"
+          color = "#636664"
+          // individualGradient.addColorStop(1, "#c7a946")
           break;
       }
-      ctx.fillRect(-(rouletteIndividualLength.current/2)+(rouletteIndividualLength.current*i)-move, 0, rouletteIndividualLength.current, 200)
+      // individualGradient.addColorStop(0, color)
+      // individualGradient.addColorStop(0.5, "#000000")
+      // individualGradient.addColorStop(1, color)
+      radialGradient.addColorStop(0,'black');
+      radialGradient.addColorStop(1,color)
+      ctx.fillStyle = radialGradient;
+      ctx.fillRect(x_pos, 0, rouletteIndividualLength.current, 200);
       if(i === rouletteLength-5 && prize.current != null){
         if(caseContentsImagesLoaded[prize.current]){
           ctx.drawImage(caseContentsImages[prize.current], -100+(rouletteIndividualLength.current*i)-move, 0, 200, 200)
@@ -202,7 +225,8 @@ function Case(props) {
         </div>
         <div className='app'>
           <div className='roulette-box'>
-            {caseContentsStatus==="fetched"?<div>
+            {caseContentsStatus==="fetched"?<div className='canvas-div'>
+              
               <canvas ref={canvasRef} width="800" height="200"></canvas>
             </div>:<div>nieok</div>}
           </div>

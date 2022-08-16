@@ -39,6 +39,8 @@
     margin-inline: auto;
     margin-top: 5vh;
     border-radius: 2vw;
+    position:static;
+    
 }
 
 .roulette-box:hover{
@@ -92,6 +94,45 @@
 } */
 
 canvas{
+    width: 800px;
+    height: 200px;
+    /* margin-left: calc(50% - 400px); */
+    /* margin-top: 64px; */
+    border-radius:8px;
+    /* animation: shade 3s infinite; */
+    position:relative;
+}
+
+.canvas-div{
+    width: 800px;
+    height: 200px;
     margin-left: calc(50% - 400px);
-    margin-top: 64px;
+    transform:translateY(25%);
+    position:static;
+    border-radius:8px;
+}
+
+.canvas-div::before{
+    content:'';
+    position:absolute;
+    width: 800px;
+    height:200px;
+    left: calc(50% - 400px);
+    box-shadow: 0 0px 20px rgb(91, 128, 158);
+    opacity: 0.3;
+    animation: shade 4s infinite ease-in-out;
+    border-radius:8px;
+}
+
+
+@keyframes shade{
+    0%{
+        opacity: 0.3;
+    }
+    50%{
+        opacity: 1;
+    }
+    100%{
+        opacity: 0.3;
+    }
 }
