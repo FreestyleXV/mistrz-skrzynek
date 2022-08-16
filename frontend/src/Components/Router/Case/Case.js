@@ -215,7 +215,7 @@ function Case(props) {
   return (
     <div>
         <div className='navbar'>
-            <p onClick={click}>DUPA</p>
+            <p onClick={click}>DUPCIA</p>
             <p>DUPA</p>
             <p>DUPA</p>
             <p>DUPA</p>
