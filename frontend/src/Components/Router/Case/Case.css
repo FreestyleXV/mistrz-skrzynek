@@ -124,6 +124,10 @@ canvas{
     border-radius:8px;
 }
 
+.roulette-start-button{
+    margin: auto;
+}
+
 
 @keyframes shade{
     0%{
@@ -135,4 +139,18 @@ canvas{
     100%{
         opacity: 0.3;
     }
+}
+
+.roulette-buttons-container{
+    width: 20%;
+    height: 20%;
+    margin: auto;
+    transform:translateY(100%);
+    text-align: center;
+    font-size: 2rem;
+}
+
+.roulette-buttons-container:hover{
+    color: white;
+    cursor: pointer;
 }

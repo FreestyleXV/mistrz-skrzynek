@@ -16,11 +16,9 @@ function Case(props) {
   const [randomContents, setRandomContents] = useState([])
   const [rouletteLength, setRouletteLength] = useState(0)
 
-
-  // const [prize, setPrize] = useState(null)
-
   const prize = useRef(null)
   const [play, setPlay] = useState(false)
+  const [finished, setFinished] = useState(false)
 
   const canvasRef = useRef(null)
 
@@ -31,7 +29,6 @@ function Case(props) {
   const speed = useRef(0)
   const slowRatio = useRef(0)
   const rollStartTime = useRef(0)
-  const currentDuration = useRef(0)
 
   const rouletteIndividualLength = useRef(200)
 
@@ -74,6 +71,13 @@ function Case(props) {
       move += 0.5
       currentRandomDuration.current -= 0.5
     }
+    else if(currentRandomDuration.current===0){
+      setFinished(true)
+      setPlay(false)
+    }
+    else{
+      setPlay(false)
+    }
     
     randomContents.forEach((id, i) => {
       let currentContent = caseContents[id]
@@ -81,7 +85,6 @@ function Case(props) {
         currentContent = caseContents[prize.current];
       }
       const x_pos = -(rouletteIndividualLength.current/2)+(rouletteIndividualLength.current*i)-move;
-      const individualGradient = ctx.createLinearGradient(x_pos, 100, x_pos + rouletteIndividualLength.current, 100);
       const radialGradient = ctx.createRadialGradient(
         x_pos + rouletteIndividualLength.current /2,
         100,
@@ -89,37 +92,27 @@ function Case(props) {
         x_pos + rouletteIndividualLength.current /2,
         100,
         rouletteIndividualLength.current/1.2);
-      // individualGradient.addColorStop(0, "rgb(0,0,0)")
       let color = "#000000"
       switch(currentContent.rarity){
         case "L":
           color = "#c7a946"
-          // individualGradient.addColorStop(1, "#c7a946")
           break;
         case "X":
           color = "#8e3232"
-          // individualGradient.addColorStop(1, "#c7a946")
           break;
         case "E":
           color = "#643c61"
-          // individualGradient.addColorStop(1, "#c7a946")
           break;
         case "R":
           color = "#396088"
-          // individualGradient.addColorStop(1, "#c7a946")
           break;
         case "U":
           color = "#39795a"
-          // individualGradient.addColorStop(1, "#c7a946")
           break;
         case "C":
           color = "#636664"
-          // individualGradient.addColorStop(1, "#c7a946")
           break;
       }
-      // individualGradient.addColorStop(0, color)
-      // individualGradient.addColorStop(0.5, "#000000")
-      // individualGradient.addColorStop(1, color)
       radialGradient.addColorStop(0,'black');
       radialGradient.addColorStop(1,color)
       ctx.fillStyle = radialGradient;
@@ -137,13 +130,11 @@ function Case(props) {
     });
     const blackoutGradient = ctx.createLinearGradient(0, 100, 800, 100);
 
-    // Add three color stops
     blackoutGradient.addColorStop(0, "rgba(0,0,0,1)");
     blackoutGradient.addColorStop(0.1, "rgba(0,0,0,0)");
     blackoutGradient.addColorStop(0.9, "rgba(0,0,0,0)");
     blackoutGradient.addColorStop(1, "rgba(0,0,0,1)");
 
-    // Set the fill style and draw a rectangle
     ctx.fillStyle = blackoutGradient;
     ctx.fillRect(0, 0, 800, 200);
     ctx.fillStyle = "black"
@@ -173,8 +164,6 @@ function Case(props) {
       let lastFrameRenderTime = Date.now()
       rollStartTime.current = Date.now()
 
-    
-    //Our draw came here
       const render = () => {
         let currentFrameRenderTime = Date.now()
         draw(context, lastFrameRenderTime, currentFrameRenderTime)
@@ -189,22 +178,38 @@ function Case(props) {
     }
   }, [draw, caseContentsStatus])
 
-  const click = async () => {
-    fetchPrize(id).then(res=>{
-      if(res.error){
-        console.log("dupa")
-      }
-      else{
-        console.log(res.prize)
-        prize.current = res.prize
-        setPlay(prev => !prev)
-      }
-    })
+  const startRoulette = async () => {
+    if(!play){
+      fetchPrize(id).then(res=>{
+        if(res.error){
+          console.log("dupa")
+        }
+        else{
+          console.log(res.prize)
+          prize.current = res.prize
+          setPlay(true)
+        }
+      })
+    }
     // console.log(caseContents)
     // console.log(caseContentsStatus)
     // console.log(rouletteLength)
     // console.log(rouletteMove)
     console.log((rouletteLength-8)*200+randomDuration.current)
+  }
+
+  const resetRoulette = () => {
+    if(finished){
+      randomDuration.current = Math.round(Math.random()*190)+105
+      currentRandomDuration.current = randomDuration.current
+      rouletteMove.current = 0
+      skipped.current = 0
+      speed.current = 0
+      slowRatio.current = 0
+      rollStartTime.current = 0
+      setPlay(false)
+      setFinished(false)
+    }
   }
   
 
@@ -215,7 +220,7 @@ function Case(props) {
   return (
     <div>
         <div className='navbar'>
-            <p onClick={click}>DUPCIA</p>
+            <p onClick={startRoulette}>DUPCIA</p>
             <p>DUPA</p>
             <p>DUPA</p>
             <p>DUPA</p>
@@ -226,9 +231,15 @@ function Case(props) {
         <div className='app'>
           <div className='roulette-box'>
             {caseContentsStatus==="fetched"?<div className='canvas-div'>
-              
               <canvas ref={canvasRef} width="800" height="200"></canvas>
             </div>:<div>nieok</div>}
+            <div className="roulette-buttons-container">
+              {play===false?
+                finished===false?
+                  <div className="roulette-start-button" onClick={startRoulette}><p>START</p></div>:
+                  <div className="roulette-reset-button" onClick={resetRoulette}><p>RESET</p></div>:
+                <div><p>CZEKAJ...</p></div>} 
+            </div>
           </div>
           {caseContentsStatus==="fetched"?<div className='case-contents'>
             {caseContents.map((el, i) => 

@@ -15,7 +15,7 @@
     transition: all 0.5s;
 }
 
-.case-contents-individual-img:hover{
+.case-contents-individual-img.hover{
     transform: rotate(20deg);
     height: 80%;
     margin-top: 10%;

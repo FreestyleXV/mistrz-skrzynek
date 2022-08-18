@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const hostname = '127.0.0.1';
 const port = 3001;
-const Contents = [{name:"MAJONEZ", rarity:"L", img:"majonez.png"}, {name:"KETCHUP", rarity:"R", img:"ketchup.png"}, {name:"MUSZTARDA", rarity:"C", img:"musztarda.png"}, {name:"SOS BARBEQUE", rarity:"X", img:"sos_barbeque.png"}, {name:"CHRZAN", rarity:"C", img:"chrzan.png"}, {name:"PINK SAUCE", rarity:"R", img:"pink_sauce.png"}, {name:"SOS 1000 WYSP", rarity:"E", img:"sos_1000_wysp.png"}]
+const Contents = [{name:"MAJONEZ", rarity:"L", img:"majonez.png"}, {name:"KETCHUP", rarity:"R", img:"ketchup.png"}, {name:"MUSZTARDA", rarity:"C", img:"musztarda.png"}, {name:"SOS BARBEQUE", rarity:"X", img:"sos_barbeque.png"}, {name:"CHRZAN", rarity:"C", img:"chrzan.png"}, {name:"SOS 1000 WYSP", rarity:"E", img:"sos_1000_wysp.png"}]
 
 const server = http.createServer((req, res) => {
   console.log(req.url)
