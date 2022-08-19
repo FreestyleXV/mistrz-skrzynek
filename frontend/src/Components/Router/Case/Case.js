@@ -40,7 +40,6 @@ function Case(props) {
         setCaseContentsStatus("error");
       }
       else{
-        console.log(res)
         setCaseContents(res.data.contents)
         setRandomContents(res.data.roulette)
         setRouletteLength(res.data.length)
@@ -95,22 +94,22 @@ function Case(props) {
         rouletteIndividualLength.current/1.2);
       let color = "#000000"
       switch(currentContent.rarity){
-        case "L":
+        case 6:
           color = "#c7a946"
           break;
-        case "X":
+        case 5:
           color = "#8e3232"
           break;
-        case "E":
+        case 4:
           color = "#643c61"
           break;
-        case "R":
+        case 3:
           color = "#396088"
           break;
-        case "U":
+        case 2:
           color = "#39795a"
           break;
-        case "C":
+        case 1:
           color = "#636664"
           break;
       }
@@ -183,20 +182,14 @@ function Case(props) {
     if(!play){
       fetchPrize(id).then(res=>{
         if(res.error){
-          console.log("dupa")
         }
         else{
           console.log(res.prize)
-          prize.current = res.prize
+          prize.current = caseContents.findIndex(contents => contents.id == res.prize)
           setPlay(true)
         }
       })
     }
-    // console.log(caseContents)
-    // console.log(caseContentsStatus)
-    // console.log(rouletteLength)
-    // console.log(rouletteMove)
-    console.log((rouletteLength-8)*200+randomDuration.current)
   }
 
   const resetRoulette = () => {
@@ -211,11 +204,6 @@ function Case(props) {
       setPlay(false)
       setFinished(false)
     }
-  }
-  
-
-  const renderContents = () =>{
-
   }
 
   return (

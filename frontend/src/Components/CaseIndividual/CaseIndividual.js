@@ -14,19 +14,19 @@ function CaseIndividual(props) {
 
   let bg = CommonBg
   switch(props.rarity){
-    case "L":
+    case 6:
       bg = LegendaryBg
       break;
-    case "X":
+    case 5:
       bg = ExtremeBg
       break;
-    case "E":
+    case 4:
       bg = EpicBg
       break;
-    case "R":
+    case 3:
       bg = RareBg
       break;
-    case "U":
+    case 2:
       bg = UncommonBg
       break;
   }

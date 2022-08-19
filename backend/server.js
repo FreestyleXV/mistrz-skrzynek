@@ -53,7 +53,7 @@ const server = http.createServer(async (req, res) => {
     }
     else{
       dbConnection.query({
-        sql: "SELECT * FROM cases_contents WHERE `case_id`= ?",
+        sql: "SELECT * FROM cases_contents WHERE `case_id`= ? ORDER BY rarity DESC",
         values: [caseId]
       }, function (err, result, fields) {
         if (err){
@@ -62,23 +62,69 @@ const server = http.createServer(async (req, res) => {
           res.end()
         }
         else{
-          let rouletteLength = Math.round(Math.random()*2) + 30
-          let rouletteContents = []
-          for(let i = 0; i < rouletteLength; i++){
-            rouletteContents.push(Math.round(Math.random()*(Contents.length-1)))
+          console.log(result)
+          if(result.length > 0){
+            let rouletteLength = Math.round(Math.random()*2) + 30
+            let rouletteContents = []
+            for(let i = 0; i < rouletteLength; i++){
+              rouletteContents.push(Math.round(Math.random()*(result.length-1)))
+            }
+            console.log('pobrano dane')
+            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
+            res.write(JSON.stringify({contents:result, length:rouletteLength, roulette:rouletteContents}))
+            res.end()
           }
-          console.log('pobrano dane')
-          res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
-          res.write(JSON.stringify({contents:result, length:rouletteLength, roulette:rouletteContents}))
-          res.end()
+          else{
+            res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
+            res.write("Bad url")
+            res.end()
+          }
         }
       });
     }
   }
   else if(url[1] == "roll") {
-    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
-    res.write(JSON.stringify({prize:Math.round(Math.random()*(Contents.length-1))}))
-    res.end()
+    let caseId = parseInt(url[2])
+    console.log(caseId, "siemano")
+    if(isNaN(caseId)){
+      res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
+      res.write("Bad url")
+      res.end()
+    }
+    else{
+      dbConnection.query({
+        sql: "SELECT * FROM cases_contents WHERE `case_id`= ? ORDER BY rarity DESC",
+        values: [caseId]
+      }, function (err, result, fields) {
+        if (err){
+          res.writeHead(503, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
+          res.write("Could not get data")
+          res.end()
+        }
+        else{
+          if(result.length > 0){
+            const winnerNumber = Math.round(Math.random()*9999)+1
+            let winnerCountDown = winnerNumber
+            for(let i = 0; i < result.length; i++){
+              if(result[i].win_chance >= winnerCountDown){
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
+                res.write(JSON.stringify({prize:result[i].id}))
+                res.end()
+                break
+              }
+              else{
+                winnerCountDown -= result[i].win_chance
+              }
+            }
+          }
+          else{
+            res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
+            res.write("Bad url")
+            res.end()
+          }
+        }
+      });
+    }
   }
   else if(url[1] == "image") {
     var img = fs.readFileSync(`./images/${url[2]}`);
