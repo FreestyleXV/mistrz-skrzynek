@@ -40,7 +40,7 @@ function CaseIndividual(props) {
 
   return (
     <div className={`case-contents-individual`} style={{'backgroundImage': `url(${bg})`}} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave}>
-      <img className={`case-contents-individual-img  ${hovered?"hover":""}`} src={`http://localhost:3001/image/${props.img}`} alt={props.name} draggable='false'></img>
+      <img className={`case-contents-individual-img  ${hovered?"hover":""}`} src={`http://localhost:3001/image/${props.image}`} alt={props.name} draggable='false'></img>
     </div>
   )
 }

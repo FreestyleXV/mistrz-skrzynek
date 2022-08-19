@@ -40,6 +40,7 @@ function Case(props) {
         setCaseContentsStatus("error");
       }
       else{
+        console.log(res)
         setCaseContents(res.data.contents)
         setRandomContents(res.data.roulette)
         setRouletteLength(res.data.length)
