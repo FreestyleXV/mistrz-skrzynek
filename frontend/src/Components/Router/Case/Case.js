@@ -40,10 +40,15 @@ function Case(props) {
         setCaseContentsStatus("error");
       }
       else{
+        let rouletteLength = Math.round(Math.random()*2) + 30
+        let rouletteContents = []
+        for(let i = 0; i < rouletteLength; i++){
+          rouletteContents.push(Math.round(Math.random()*(res.data.contents.length-1)))
+        }
         setCaseContents(res.data.contents)
-        setRandomContents(res.data.roulette)
-        setRouletteLength(res.data.length)
-        speed.current = ((res.data.length-10)*rouletteIndividualLength.current)/5
+        setRandomContents(rouletteContents)
+        setRouletteLength(rouletteLength)
+        speed.current = ((rouletteLength-10)*rouletteIndividualLength.current)/5
         slowRatio.current = speed.current/10
         setCaseContentsStatus("fetched")
         const ImagesData = createImages(res.data.contents,imgLoaded);
@@ -60,7 +65,7 @@ function Case(props) {
     })
   }
 
-  const draw = (ctx, lfrt, cfrt) => {
+  const draw = (ctx) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     let move = rouletteMove.current
     if(play && skipped.current < rouletteLength-8){
@@ -71,11 +76,8 @@ function Case(props) {
       move += 0.5
       currentRandomDuration.current -= 0.5
     }
-    else if(currentRandomDuration.current===0){
+    else if(currentRandomDuration.current===0 && !finished && play){
       setFinished(true)
-      setPlay(false)
-    }
-    else{
       setPlay(false)
     }
     
@@ -117,9 +119,15 @@ function Case(props) {
       radialGradient.addColorStop(1,color)
       ctx.fillStyle = radialGradient;
       ctx.fillRect(x_pos, 0, rouletteIndividualLength.current, 200);
-      if(i === rouletteLength-5 && prize.current != null){
-        if(caseContentsImagesLoaded[prize.current]){
-          ctx.drawImage(caseContentsImages[prize.current], -100+(rouletteIndividualLength.current*i)-move, 0, 200, 200)
+      if(i === rouletteLength-5){
+        if(prize.current === null){
+          ctx.fillStyle = "black"
+          ctx.fillRect(-100+(rouletteIndividualLength.current*i)-move, 0, 200, 200)
+        }
+        else{
+          if(caseContentsImagesLoaded[prize.current]){
+            ctx.drawImage(caseContentsImages[prize.current], -100+(rouletteIndividualLength.current*i)-move, 0, 200, 200)
+          }
         }
       }
       else{
@@ -161,13 +169,9 @@ function Case(props) {
       const context = canvas.getContext('2d')
       
       let animationFrameId
-      let lastFrameRenderTime = Date.now()
-      rollStartTime.current = Date.now()
 
       const render = () => {
-        let currentFrameRenderTime = Date.now()
-        draw(context, lastFrameRenderTime, currentFrameRenderTime)
-        lastFrameRenderTime = currentFrameRenderTime
+        draw(context)
         animationFrameId = window.requestAnimationFrame(render)
         }
         render()
@@ -179,14 +183,15 @@ function Case(props) {
   }, [draw, caseContentsStatus])
 
   const startRoulette = async () => {
-    if(!play){
+    if(!play && !finished){
+      setPlay(true)
+      console.log("fetching prize...")
       fetchPrize(id).then(res=>{
         if(res.error){
         }
         else{
           console.log(res.prize)
-          prize.current = caseContents.findIndex(contents => contents.id == res.prize)
-          setPlay(true)
+          prize.current = caseContents.findIndex(contents => contents.id === res.prize)
         }
       })
     }
@@ -194,12 +199,20 @@ function Case(props) {
 
   const resetRoulette = () => {
     if(finished){
+      let rouletteLength = Math.round(Math.random()*2) + 30
+      let rouletteContents = []
+      for(let i = 0; i < rouletteLength; i++){
+        rouletteContents.push(Math.round(Math.random()*(caseContents.length-1)))
+      }
+      setRandomContents(rouletteContents)
+      setRouletteLength(rouletteLength)
+      speed.current = ((rouletteLength-10)*rouletteIndividualLength.current)/5
+      slowRatio.current = speed.current/10
+      setCaseContentsStatus("fetched")
       randomDuration.current = Math.round(Math.random()*190)+105
       currentRandomDuration.current = randomDuration.current
       rouletteMove.current = 0
       skipped.current = 0
-      speed.current = 0
-      slowRatio.current = 0
       rollStartTime.current = 0
       setPlay(false)
       setFinished(false)
@@ -236,6 +249,7 @@ function Case(props) {
             )}
           </div>:<div>nieok</div>}
         </div>
+        <div className='footer'><p>Copyright © FreestyleXV</p></div>
     </div>
   )
 }

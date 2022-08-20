@@ -64,14 +64,14 @@ const server = http.createServer(async (req, res) => {
         else{
           console.log(result)
           if(result.length > 0){
-            let rouletteLength = Math.round(Math.random()*2) + 30
-            let rouletteContents = []
-            for(let i = 0; i < rouletteLength; i++){
-              rouletteContents.push(Math.round(Math.random()*(result.length-1)))
-            }
+            // let rouletteLength = Math.round(Math.random()*2) + 30
+            // let rouletteContents = []
+            // for(let i = 0; i < rouletteLength; i++){
+            //   rouletteContents.push(Math.round(Math.random()*(result.length-1)))
+            // }
             console.log('pobrano dane')
             res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
-            res.write(JSON.stringify({contents:result, length:rouletteLength, roulette:rouletteContents}))
+            res.write(JSON.stringify({contents:result}))
             res.end()
           }
           else{
@@ -116,6 +116,10 @@ const server = http.createServer(async (req, res) => {
                 winnerCountDown -= result[i].win_chance
               }
             }
+            dbConnection.query({
+              sql:"UPDATE `cases` SET `open_count` = `open_count`+1 WHERE `cases`.`id` = ?;",
+              values:[caseId]
+            })
           }
           else{
             res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
