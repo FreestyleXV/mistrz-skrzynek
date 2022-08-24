@@ -1,0 +1,16 @@
+.footer{
+    position: fixed;
+    bottom: 0;
+    left: 5%;
+    width: 90%;
+    height: 5%;
+    border-top-left-radius: 2vw;
+    border-top-right-radius: 2vw;
+    text-align: center;
+    line-height: 100%;
+}
+
+.footer:hover{
+    background-color: rgb(10, 10, 10);
+    color: white;
+}

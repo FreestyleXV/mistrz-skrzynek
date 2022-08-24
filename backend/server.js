@@ -1,137 +1,85 @@
-const http = require('http');
-const fs = require('fs');
-const mysql = require('mysql');
+import { createServer } from 'http';
+import { readFileSync } from 'fs';
+import { Database } from './Utils/database.js';
+import {MongoClient} from 'mongodb'
+import drawPrize from './Utils/prizeDrawer.js';
 
 const hostname = '127.0.0.1';
 const port = 3001;
-const Contents = [{name:"MAJONEZ", rarity:"L", img:"majonez.png"}, {name:"KETCHUP", rarity:"R", img:"ketchup.png"}, {name:"MUSZTARDA", rarity:"C", img:"musztarda.png"}, {name:"SOS BARBEQUE", rarity:"X", img:"sos_barbeque.png"}, {name:"CHRZAN", rarity:"C", img:"chrzan.png"}, {name:"SOS 1000 WYSP", rarity:"E", img:"sos_1000_wysp.png"}]
 
+const uri = "mongodb+srv://FreestyleXV:qWlTconONbsCDNTR@cluster0.2qp8uxe.mongodb.net/?retryWrites=true&w=majority";
+const db = new Database(uri)
 
-function initializeConnection(config) {
-  function addDisconnectHandler(connection) {
-      connection.on("error", function (error) {
-          if (error instanceof Error) {
-              if (error.code === "PROTOCOL_CONNECTION_LOST") {
-                  console.error(error.stack);
-                  console.log("Lost connection. Reconnecting...");
-
-                  initializeConnection(connection.config);
-              } else if (error.fatal) {
-                  throw error;
-              }
-          }
-      });
-  }
-
-  var connection = mysql.createConnection(config);
-
-  // Add handlers.
-  addDisconnectHandler(connection);
-
-  connection.connect();
-  return connection;
-}
-
-
-const dbConnection = initializeConnection({
-  host:"localhost",
-  user:"root",
-  password:"",
-  database: "mistrz-skrzynek"
-})
-
-const server = http.createServer(async (req, res) => {
+const server = createServer(async (req, res) => {
   console.log(req.url)
   let url = req.url.split("/")
   if(url[1] == 'contents'){
-    let caseId = parseInt(url[2])
-    console.log(caseId, "siemano")
-    if(isNaN(caseId)){
-      res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
-      res.write("Bad url")
-      res.end()
+    let content = await db.getCaseContentsFromUrl(url[2])
+    if(content.error){
+      if(content.error === "Empty Case"){
+        res.writeHead(503, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
+        res.write("Case does not have any content")
+        res.end()
+      }
+      else{
+        res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
+        res.write("Such case does not exist. Bad url.")
+        res.end()
+      }
     }
     else{
-      dbConnection.query({
-        sql: "SELECT * FROM cases_contents WHERE `case_id`= ? ORDER BY rarity DESC",
-        values: [caseId]
-      }, function (err, result, fields) {
-        if (err){
-          res.writeHead(503, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
-          res.write("Could not get data")
-          res.end()
-        }
-        else{
-          console.log(result)
-          if(result.length > 0){
-            // let rouletteLength = Math.round(Math.random()*2) + 30
-            // let rouletteContents = []
-            // for(let i = 0; i < rouletteLength; i++){
-            //   rouletteContents.push(Math.round(Math.random()*(result.length-1)))
-            // }
-            console.log('pobrano dane')
-            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
-            res.write(JSON.stringify({contents:result}))
-            res.end()
-          }
-          else{
-            res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
-            res.write("Bad url")
-            res.end()
-          }
-        }
-      });
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
+      res.write(JSON.stringify(content.data))
+      res.end()
     }
   }
   else if(url[1] == "roll") {
-    let caseId = parseInt(url[2])
-    console.log(caseId, "siemano")
-    if(isNaN(caseId)){
-      res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
-      res.write("Bad url")
-      res.end()
+    const prizeFetch = await db.getPrize(url[2])
+    if(prizeFetch.error){
+      if(prizeFetch.error === "Nonexistent Case"){
+        res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
+        res.write("Such case does not exist. Bad url.")
+        res.end()
+      }
     }
     else{
-      dbConnection.query({
-        sql: "SELECT * FROM cases_contents WHERE `case_id`= ? ORDER BY rarity DESC",
-        values: [caseId]
-      }, function (err, result, fields) {
-        if (err){
-          res.writeHead(503, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
-          res.write("Could not get data")
-          res.end()
-        }
-        else{
-          if(result.length > 0){
-            const winnerNumber = Math.round(Math.random()*9999)+1
-            let winnerCountDown = winnerNumber
-            for(let i = 0; i < result.length; i++){
-              if(result[i].win_chance >= winnerCountDown){
-                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
-                res.write(JSON.stringify({prize:result[i].id}))
-                res.end()
-                break
-              }
-              else{
-                winnerCountDown -= result[i].win_chance
-              }
-            }
-            dbConnection.query({
-              sql:"UPDATE `cases` SET `open_count` = `open_count`+1 WHERE `cases`.`id` = ?;",
-              values:[caseId]
-            })
-          }
-          else{
-            res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
-            res.write("Bad url")
-            res.end()
-          }
-        }
-      });
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
+      res.write(JSON.stringify({prize:prizeFetch.data}))
+      res.end()
     }
+    // client.connect(async err => {
+    //   const cursor = client.db("mistrz-skrzynek").collection("cases_contents").find({
+    //     case_id: ObjectId(url[2])
+    //   }, {projection:{case_id:0, rarity:0, image:0}})
+    //   const result = await cursor.toArray()
+
+    //   if(result.length > 0){
+    //     console.log("rolluje")
+    //     const winnerNumber = Math.round(Math.random()*9999)+1
+    //     let winnerCountDown = winnerNumber
+    //     for(let i = 0; i < result.length; i++){
+    //       if(result[i].win_chance >= winnerCountDown){
+    //         console.log(result[i]._id.valueOf())
+    //         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
+    //         res.write(JSON.stringify({prize:result[i].name}))
+    //         res.end()
+    //         break
+    //       }
+    //       else{
+    //         winnerCountDown -= result[i].win_chance
+    //       }
+    //     }
+    //   }
+    //   else{
+    //     res.writeHead(404, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'})
+    //     res.write("Bad url")
+    //     res.end()
+    //   }
+    //   client.close()
+    // })
   }
   else if(url[1] == "image") {
-    var img = fs.readFileSync(`./images/${url[2]}`);
+    var img = readFileSync(`./images/${url[2]}`);
     res.writeHead(200, {'Content-Type': 'image/png' });
     res.end(img, 'binary');
   }

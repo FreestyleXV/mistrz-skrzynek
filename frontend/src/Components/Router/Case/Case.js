@@ -11,6 +11,7 @@ function Case(props) {
 
   const [caseContentsStatus, setCaseContentsStatus] = useState("fetching")
   const [caseContents, setCaseContents] = useState([])
+  const [caseId, setCaseId] = useState(null)
   const [caseContentsImages, setCaseContentsImages] = useState([])
   const [caseContentsImagesLoaded, setCaseContentsImagesLoaded] = useState([])
   const [randomContents, setRandomContents] = useState([])
@@ -45,6 +46,7 @@ function Case(props) {
         for(let i = 0; i < rouletteLength; i++){
           rouletteContents.push(Math.round(Math.random()*(res.data.contents.length-1)))
         }
+        setCaseId(res.data.case_id)
         setCaseContents(res.data.contents)
         setRandomContents(rouletteContents)
         setRouletteLength(rouletteLength)
@@ -69,12 +71,13 @@ function Case(props) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     let move = rouletteMove.current
     if(play && skipped.current < rouletteLength-8){
-      let moveLength = 10 - (skipped.current/(rouletteLength-8))*10
-      move += moveLength<0.75?0.75:moveLength
+      // let moveLength = 10 - (skipped.current/(rouletteLength-8))*10
+      const moveLength = Math.sin(Math.PI/2 + ((skipped.current/(rouletteLength-8))*Math.PI/2))*10
+      move += moveLength<1?1:moveLength
     }
     else if(play && currentRandomDuration.current>0){
-      move += 0.5
-      currentRandomDuration.current -= 0.5
+      move += 1
+      currentRandomDuration.current -= 1
     }
     else if(currentRandomDuration.current===0 && !finished && play){
       setFinished(true)
@@ -139,8 +142,8 @@ function Case(props) {
     const blackoutGradient = ctx.createLinearGradient(0, 100, 800, 100);
 
     blackoutGradient.addColorStop(0, "rgba(0,0,0,1)");
-    blackoutGradient.addColorStop(0.1, "rgba(0,0,0,0)");
-    blackoutGradient.addColorStop(0.9, "rgba(0,0,0,0)");
+    blackoutGradient.addColorStop(0.2, "rgba(0,0,0,0)");
+    blackoutGradient.addColorStop(0.8, "rgba(0,0,0,0)");
     blackoutGradient.addColorStop(1, "rgba(0,0,0,1)");
 
     ctx.fillStyle = blackoutGradient;
@@ -186,12 +189,12 @@ function Case(props) {
     if(!play && !finished){
       setPlay(true)
       console.log("fetching prize...")
-      fetchPrize(id).then(res=>{
+      fetchPrize(caseId).then(res=>{
         if(res.error){
         }
         else{
           console.log(res.prize)
-          prize.current = caseContents.findIndex(contents => contents.id === res.prize)
+          prize.current = caseContents.findIndex(contents => contents.name === res.prize)
         }
       })
     }
@@ -220,37 +223,25 @@ function Case(props) {
   }
 
   return (
-    <div>
-        <div className='navbar'>
-            <p onClick={startRoulette}>DUPCIA</p>
-            <p>DUPA</p>
-            <p>DUPA</p>
-            <p>DUPA</p>
-            <p>DUPA</p>
-            <p>DUPA</p>
-            <p>DUPA</p>
-        </div>
-        <div className='app'>
-          <div className='roulette-box'>
-            {caseContentsStatus==="fetched"?<div className='canvas-div'>
-              <canvas ref={canvasRef} width="800" height="200"></canvas>
-            </div>:<div>nieok</div>}
-            <div className="roulette-buttons-container">
-              {play===false?
-                finished===false?
-                  <div className="roulette-start-button" onClick={startRoulette}><p>START</p></div>:
-                  <div className="roulette-reset-button" onClick={resetRoulette}><p>RESET</p></div>:
-                <div><p>CZEKAJ...</p></div>} 
-            </div>
-          </div>
-          {caseContentsStatus==="fetched"?<div className='case-contents'>
-            {caseContents.map((el, i) => 
-              <CaseIndividual key={i} {...el}></CaseIndividual>
-            )}
+      <div className='app'>
+        <div className='roulette-box'>
+          {caseContentsStatus==="fetched"?<div className='canvas-div'>
+            <canvas ref={canvasRef} width="800" height="200"></canvas>
           </div>:<div>nieok</div>}
+          <div className="roulette-buttons-container">
+            {play===false?
+              finished===false?
+                <div className="roulette-start-button" onClick={startRoulette}><p>START</p></div>:
+                <div className="roulette-reset-button" onClick={resetRoulette}><p>RESET</p></div>:
+              <div><p>CZEKAJ...</p></div>} 
+          </div>
         </div>
-        <div className='footer'><p>Copyright © FreestyleXV</p></div>
-    </div>
+        {caseContentsStatus==="fetched"?<div className='case-contents'>
+          {caseContents.map((el, i) => 
+            <CaseIndividual key={i} {...el}></CaseIndividual>
+          )}
+        </div>:<div>nieok</div>}
+      </div>
   )
 }
 
